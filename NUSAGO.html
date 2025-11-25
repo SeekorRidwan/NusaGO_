@@ -1,0 +1,950 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NusaGo - Smart Tourism & Hospitality (FIXED PAYMENT)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>body{font-family:'Inter',sans-serif} .fade-in{animation:fadeIn .5s ease-out forwards}@keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+    
+/* === RESPONSIVE SMALLER MODAL FOR MOBILE === */
+@media (max-width: 640px) {
+    #destinationDetailModal > div {
+        max-width: 88% !important;
+        max-height: 72% !important;
+        margin-top: 100px !important;
+        border-radius: 16px !important;
+    }
+    #destinationDetailModal img {
+        height: 110px !important;
+    }
+}
+
+</style>
+</head>
+<body>
+<div id="mobileTopBar" class="xl:hidden fixed top-0 left-0 w-full bg-white shadow-md z-[999999] px-4 py-3 flex justify-between items-center">
+  <h1 class="text-xl font-bold text-blue-600">NusaGO</h1>
+  
+<button id="mobileMenuBtn" class="p-2 relative z-[1300]" style="background:transparent;border:none;">
+    <img src="burger.svg" alt="menu" style="width:28px;height:28px;object-fit:contain;">
+</button>
+
+</div>
+
+<div id="mobileNavTabs" class="xl:hidden fixed top-[72px] left-0 w-full bg-white shadow-sm z-[999998]">
+    <div class="flex justify-around border-b border-gray-200">
+        <button id="mobile-btn-destinasi" class="mobile-tab flex-1 py-3 px-1 text-sm font-semibold border-b-2 border-blue-600 text-blue-600" data-target="destinasi">Destinasi</button>
+        <button id="mobile-btn-penginapan" class="mobile-tab flex-1 py-3 px-1 text-sm text-gray-600 border-b-2 border-transparent" data-target="penginapan">Penginapan</button>
+        <button id="mobile-btn-kuliner" class="mobile-tab flex-1 py-3 px-1 text-sm text-gray-600 border-b-2 border-transparent" data-target="kuliner">Kuliner</button>
+        <button id="mobile-btn-pembayaran" class="mobile-tab flex-1 py-3 px-1 text-sm text-gray-600 border-b-2 border-transparent" data-target="pembayaran">Pembayaran</button>
+    </div>
+</div>
+
+<div class="pt-28 xl:pt-0"></div>
+
+
+<div id="loadingScreen" class="fixed inset-0 bg-white z-[999999999] flex flex-col items-center justify-center transition-all duration-700">
+  <h1 class="text-3xl font-bold text-blue-600 animate-pulse">NusaGO</h1>
+  <p class="mt-2 text-gray-500">Smart Tourism & Hospitality</p>
+</div>
+
+<div id="mainContainer" class="opacity-0 transition-opacity duration-500 w-full max-w-7xl mx-auto bg-white shadow-lg flex flex-col min-h-screen">
+
+  <div class="bg-white border-b border-gray-200 p-4 lg:p-6">
+    <div class="lg:grid lg:grid-cols-12 lg:gap-6 lg:items-center">
+      <div class="lg:col-span-3 flex items-center"><h1 id="siteTitle" class="text-2xl font-bold text-blue-600">NusaGO</h1></div>
+      <div class="lg:col-span-8">
+        <div class="relative"><input id="search-input" oninput="liveSearch && liveSearch()" type="text" placeholder="Cari destinasi, kuliner halal..." class="w-full bg-gray-100 border border-gray-300 rounded-lg py-2 pl-10 pr-4 focus:outline-none focus:ring-2 focus:ring-blue-500"><div class="absolute inset-y-0 left-0 flex items-center pl-3"><i data-lucide="search" class="w-5 h-5 text-gray-400"></i></div></div>
+      </div>
+      <div class="hidden lg:flex lg:col-span-1 lg:justify-end">
+        <div id="header-controls" class="hidden xl:flex items-center space-x-3">
+          <div id="controls-before"><button id="btnLoginTop" class="bg-blue-600 text-white px-4 py-2 rounded-lg">Login</button></div>
+          <div id="controls-after" class="hidden relative"><button id="profileBtnTop" class="flex items-center"><img src="https://placehold.co/40x40/E2E8F0/4A5568?text=A" class="rounded-full w-10 h-10"></button><div id="profileMenuTop" class="hidden absolute z-50 right-0 mt-2 w-40 bg-white border rounded-lg shadow-lg"><button id="profileLogoutBtn" class="w-full text-left px-4 py-2 hover:bg-gray-100">Logout</button></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="hidden xl:block sticky top-0 bg-white z-10 shadow-sm">
+    <div class="flex justify-around border-b border-gray-200">
+      <button id="btn-destinasi" class="tab-button py-3 px-4 font-semibold text-sm border-b-2 border-blue-600 text-blue-600">Destinasi</button>
+      <button id="btn-penginapan" class="tab-button py-3 px-4 text-gray-600 text-sm hover:bg-gray-100 border-b-2 border-transparent">Penginapan Hotel</button>
+      <button id="btn-kuliner" class="tab-button py-3 px-4 text-gray-600 text-sm hover:bg-gray-100 border-b-2 border-transparent">Kuliner Halal</button>
+      <button id="btn-pembayaran" class="tab-button py-3 px-4 text-gray-600 text-sm hover:bg-gray-100 border-b-2 border-transparent">Pembayaran</button>
+    </div>
+  </div>
+
+<div id="budgetFilter" class="bg-white p-4 border-b border-gray-200">
+  <label class="font-semibold text-gray-700 text-sm">Rekomendasi Destinasi Berdasarkan Budget</label>
+
+  <div class="mt-3 grid grid-cols-1 md:grid-cols-2 gap-4 items-center">
+
+    <div>
+      <input id="budgetSlider" type="range" min="0" max="20000000" step="50000" value="0" class="w-full accent-blue-600" list="budgetMarks">
+      <datalist id="budgetMarks">
+        <option value="0" label="200K"></option>
+        <option value="1000000" label="1JT"></option>
+        <option value="5000000" label="5JT"></option>
+        <option value="10000000" label="10JT"></option>
+        <option value="20000000" label="20JT"></option>
+      </datalist>
+    </div>
+
+    <div class="flex items-center space-x-2">
+      <span class="text-sm font-medium text-gray-700">Input Nominal:</span>
+      <div class="flex">
+        <span class="inline-flex items-center px-3 text-sm text-gray-900 bg-gray-200 border border-r-0 border-gray-300 rounded-l-lg">Rp</span>
+        <input id="budgetInput" type="text" class="border border-gray-300 rounded-r-lg p-2 w-32 focus:ring-2 focus:ring-blue-500" placeholder="200.000">
+      </div>
+
+    </div>
+
+  </div>
+
+  <p class="text-sm text-gray-600 mt-2">Budget Anda: <span id="budgetValue" class="font-bold text-blue-600">Rp 200.000</span></p>
+</div>
+
+<main class="flex-grow overflow-y-auto bg-gray-50">
+    <div class="p-4 md:p-6 lg:px-8 lg:py-6">
+      <div id="destinasi" class="tab-content fade-in">
+        <h2 class="text-lg font-semibold text-gray-800 mb-4">Destinasi Populer</h2>
+        <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4" id="dest-list">
+          </div>
+      </div>
+
+      <div id="penginapan" class="tab-content hidden fade-in"><h2 class="text-lg font-semibold text-gray-800 mb-4">Penginapan</h2><div id="hotel-list" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4"></div></div>
+
+      <div id="kuliner" class="tab-content hidden fade-in"><h2 class="text-lg font-semibold text-gray-800 mb-4">Kuliner Halal</h2><div id="food-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div></div>
+
+      <div id="pembayaran" class="tab-content hidden fade-in">
+        <h2 class="text-lg font-semibold text-gray-800 mb-6">Keranjang Pembelian</h2>
+        <div class="grid grid-cols-1 lg:grid-cols-3 lg:gap-8">
+          <div class="lg:col-span-2 bg-white p-5 rounded-xl shadow">
+            <div class="flex justify-between items-center border-b pb-3 mb-4">
+              <h3 class="font-bold text-lg text-gray-800">Daftar Item</h3>
+              <button id="clearCartBtn" class="text-sm text-red-500 hover:text-red-700 disabled:opacity-50"><i data-lucide="trash" class="w-4 h-4 inline mr-1"></i> Bersihkan Keranjang</button>
+            </div>
+            <div id="cart-items-container" class="space-y-4"><div class="text-center text-gray-500 py-10">Keranjang kosong. Silahkan tambah item dari tab Destinasi/Penginapan untuk melanjutkan...</div></div>
+          </div>
+
+          <div class="space-y-3 bg-gray-100 p-5 rounded-xl shadow-inner mt-6 lg:mt-0">
+            <h3 class="font-bold text-lg text-gray-800">Ringkasan Pembayaran</h3>
+            <div class="space-y-2 text-sm">
+              <div class="flex justify-between"><span class="text-gray-600">Subtotal Item</span><span id="subtotal" class="font-medium">Rp 0</span></div>
+              <div class="flex justify-between border-b border-gray-300 pb-2"><span class="text-gray-600">Biaya Layanan</span><span id="service-fee" class="font-medium">Rp 0</span></div>
+              <div class="flex justify-between border-t border-gray-300 pt-3"><span class="font-bold text-base text-gray-800">TOTAL BAYAR</span><span id="grand-total" class="font-extrabold text-lg text-red-600">Rp 0</span></div>
+            </div>
+            <div class="bg-yellow-100 p-3 rounded-lg text-sm font-medium text-yellow-800 flex justify-between items-center mt-3"><span>Saldo Anda:</span><span id="user-balance-display" class="font-bold">Rp 0</span></div>
+            <button id="openTopUpBtn" class="w-full bg-green-500 text-white font-semibold py-2 rounded-lg hover:bg-green-600 flex items-center justify-center text-sm"><i data-lucide="wallet" class="w-4 h-4 inline mr-2"></i> Top Up Saldo</button>
+            <button id="checkoutBtn" class="w-full bg-green-600 text-white font-semibold py-3 rounded-lg hover:bg-green-700 mt-6 disabled:bg-gray-400" disabled>Bayar Sekarang</button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <div id="destinationDetailModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden items-center justify-center">
+    <div class="bg-white rounded-2xl shadow-xl w-full max-w-lg m-4 flex flex-col fade-in max-h-[90%]">
+      <div class="p-4 border-b flex justify-between items-center"><h2 id="destination-detail-title" class="text-xl font-semibold text-blue-800"></h2><button onclick="closeModal('destinationDetailModal')" class="text-gray-500 hover:text-gray-800 text-3xl leading-none">&times;</button></div>
+      <div class="overflow-y-auto p-4"><img id="destination-detail-img" src="" alt="" class="w-full h-52 object-cover"><div class="p-4 space-y-4"><div id="destination-rating" class="text-yellow-500 font-semibold"></div><div class="flex items-center text-gray-600"><i data-lucide="map-pin" class="w-4 h-4 mr-2 text-red-500"></i><span id="destination-detail-location" class="font-medium"></span></div><div><h3 class="font-bold text-gray-700 mb-2">Deskripsi</h3><p id="destination-detail-description" class="text-gray-600 text-sm leading-relaxed"></p></div>
+<div id="guide-options-container" style="display:none" class="space-y-2">
+  <h3 class="font-bold text-gray-700">Pilih Pemandu</h3>
+  <label class="flex items-center space-x-2">
+    <input type="radio" name="guideOption" value="0" checked onclick="updateGuidePrice(0)">
+    <span class="text-sm">Tanpa Pemandu (Rp 0)</span>
+  </label>
+  <label class="flex items-center space-x-2">
+    <input type="radio" name="guideOption" value="100000" onclick="updateGuidePrice(100000)">
+    <span class="text-sm">Pemandu Lokal (Rp 100.000)</span>
+  </label>
+  <label class="flex items-center space-x-2">
+    <input type="radio" name="guideOption" value="450000" onclick="updateGuidePrice(450000)">
+    <span class="text-sm">Pemandu Premium - English (Rp 450.000)</span>
+  </label>
+</div>
+<div class="border-t pt-4 space-y-2"><div class="flex justify-between items-center text-sm font-semibold"><span class="text-gray-600">Harga Item Dasar</span><span id="base-price-display" class="font-bold text-gray-800">Rp 0</span></div><div class="flex justify-between items-center text-lg font-bold border-t pt-2"><span class="text-gray-800">TOTAL HARGA</span><span id="total-price-display" class="text-red-600">Rp 0</span></div></div><button id="addToCartBtn" class="w-full bg-blue-600 text-white font-semibold py-3 rounded-lg hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed"><i data-lucide="shopping-cart" class="w-5 h-5 inline mr-2"></i> Tambahkan ke Keranjang</button></div></div></div>
+  </div>
+
+  <div id="topUpModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden items-center justify-center"><div class="bg-white rounded-2xl shadow-xl w-full max-w-sm m-4 p-6 flex flex-col fade-in"><div class="flex justify-between items-center mb-4 border-b pb-3"><h2 class="text-xl font-bold text-green-700 flex items-center"><i data-lucide="wallet" class="w-6 h-6 mr-2"></i> Top Up Saldo</h2><button onclick="closeModal('topUpModal')" class="text-gray-500 hover:text-gray-800 text-3xl leading-none">&times;</button></div><div class="space-y-4"><p class="text-sm text-gray-600">Pilih atau masukkan jumlah top up yang diinginkan.</p><div class="mb-4"><p class="text-sm font-medium text-gray-700 mb-2">Pilihan Cepat:</p><div id="quick-topup-options" class="grid grid-cols-2 gap-3"><button type="button" data-amount="100000" class="quick-topup-btn py-2 px-4 border border-gray-300 rounded-lg hover:bg-blue-50 text-sm font-semibold">Rp 100.000</button><button type="button" data-amount="500000" class="quick-topup-btn py-2 px-4 border border-gray-300 rounded-lg hover:bg-blue-50 text-sm font-semibold">Rp 500.000</button><button type="button" data-amount="1000000" class="quick-topup-btn py-2 px-4 border border-gray-300 rounded-lg hover:bg-blue-50 text-sm font-semibold">Rp 1.000.000</button><button type="button" data-amount="2000000" class="quick-topup-btn py-2 px-4 border border-gray-300 rounded-lg hover:bg-blue-50 text-sm font-semibold">Rp 2.000.000</button></div></div><div class="relative"><label for="custom-topup-input" class="block text-sm font-medium text-gray-700 mb-1">Jumlah Lain (Min. Rp 10.000)</label><div class="flex"><span class="inline-flex items-center px-3 text-sm text-gray-900 bg-gray-200 border border-r-0 border-gray-300 rounded-l-lg">Rp</span><input id="custom-topup-input" autocomplete="off" type="text" min="10000" placeholder="Masukkan jumlah top up" class="flex-1 bg-white border border-gray-300 rounded-none rounded-r-lg p-3 focus:outline-none focus:ring-2 focus:ring-green-500"></div></div><button id="confirmTopUpBtn" class="w-full bg-green-600 text-white font-semibold py-3 rounded-lg hover:bg-green-700 mt-4 disabled:bg-gray-400" disabled>Konfirmasi Top Up</button></div></div></div>
+
+    <div id="topUpMethodModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden items-center justify-center">
+        <div class="bg-white rounded-2xl shadow-xl w-full max-w-sm m-4 p-6 flex flex-col fade-in">
+            <div class="flex justify-between items-center mb-4 border-b pb-3">
+                <h2 class="text-xl font-bold text-green-700 flex items-center"><i data-lucide="send" class="w-6 h-6 mr-2"></i> Pilih Metode Bayar</h2>
+                <button onclick="closeModal('topUpMethodModal')" class="text-gray-500 hover:text-gray-800 text-3xl leading-none">&times;</button>
+            </div>
+            <p class="text-sm text-gray-600 mb-4">Pilih metode pembayaran untuk top up sebesar <span id="topup-amount-display" class="font-bold text-green-600"></span>.</p>
+            <div class="space-y-3">
+                <button data-method="bank" class="topup-method-btn w-full bg-blue-50 border border-blue-200 text-blue-700 font-semibold py-3 rounded-lg hover:bg-blue-100 flex items-center justify-between text-sm">
+                    <span><i data-lucide="banknote" class="w-4 h-4 inline mr-2"></i> Transfer Bank (Simulasi)</span>
+                    <span>Biaya: Rp 2.500</span>
+                </button>
+                <button data-method="ewallet" class="topup-method-btn w-full bg-indigo-50 border border-indigo-200 text-indigo-700 font-semibold py-3 rounded-lg hover:bg-indigo-100 flex items-center justify-between text-sm">
+                    <span><i data-lucide="smartphone" class="w-4 h-4 inline mr-2"></i> E-Wallet (Simulasi)</span>
+                    <span>Biaya: Rp 1.500</span>
+                </button>
+            </div>
+            <p id="topup-info" class="text-xs text-center text-gray-500 mt-4">Pilih salah satu di atas untuk melanjutkan simulasi pembayaran.</p>
+            <button id="finalSimulatePaymentBtn" class="w-full bg-green-600 text-white font-semibold py-3 rounded-lg hover:bg-green-700 mt-4 disabled:bg-gray-400" disabled>Bayar Sekarang</button>
+        </div>
+    </div>
+    <div id="successPaymentModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden items-center justify-center"><div class="bg-white rounded-2xl shadow-xl w-full max-w-sm m-4 p-6 text-center fade-in"><i data-lucide="check-circle" class="w-16 h-16 text-green-500 mx-auto mb-4"></i><h2 class="text-2xl font-bold text-green-700 mb-2">Pembayaran Berhasil!</h2><p class="text-gray-600 mb-4">Reservasi Anda telah dikonfirmasi dan saldo telah diperbarui.</p><div class="space-y-2 text-left bg-gray-50 p-4 rounded-lg border"><div class="flex justify-between text-sm"><span class="text-gray-600">Jumlah Dibayar:</span><span id="modal-paid-amount" class="font-bold text-lg text-green-600"></span></div><div class="flex justify-between text-sm border-t pt-2"><span class="text-gray-600">Sisa Saldo Anda:</span><span id="modal-remaining-balance" class="font-bold text-blue-600"></span></div></div><button onclick="closeModal('successPaymentModal')" class="w-full bg-blue-600 text-white font-semibold py-3 rounded-lg hover:bg-blue-700 mt-6">Selesai</button></div></div>
+
+  <div id="loginModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden items-center justify-center"><div class="bg-white rounded-2xl shadow-xl w-full max-w-sm m-4 p-6 flex flex-col fade-in"><div class="flex justify-between items-center mb-4 border-b pb-3"><h2 class="text-xl font-bold text-blue-700">Login</h2><button onclick="closeModal('loginModal')" class="text-gray-500 hover:text-gray-800 text-3xl leading-none">&times;</button></div><div class="space-y-4"><input id="loginEmail" placeholder="username" class="w-full border p-2 rounded"/><input id="loginPassword" type="password" placeholder="password" class="w-full border p-2 rounded"/><button id="submitLoginBtn" class="w-full bg-blue-600 text-white py-2 rounded">Masuk</button></div></div></div>
+
+  <div id="toast-container" class="fixed bottom-4 right-4 space-y-2 z-50"></div>
+
+</div> <script>
+// Helper utilities
+function parseRupiahToNumber(str){ if(typeof str!=='number') { if(!str) return 0; return parseInt(String(str).replace(/[^0-9]/g,''),10) || 0; } return Number(str||0); }
+function formatRupiah(num){ return 'Rp ' + Number(num||0).toLocaleString('id-ID'); }
+function showToast(message, type='success'){ const container = document.getElementById('toast-container'); const el = document.createElement('div'); el.className = 'p-3 rounded-lg shadow text-white ' + (type==='success'?'bg-green-600':'bg-red-600'); el.textContent = message; container.appendChild(el); setTimeout(()=>el.remove(), 3000); }
+
+// Modal helpers
+function openModal(id){ const el=document.getElementById(id); if(!el) return; el.classList.remove('hidden'); el.classList.add('flex'); try{ if(window.lucide) lucide.createIcons(); }catch(e){} }
+function closeModal(id){
+  const el = document.getElementById(id);
+  if(!el) return;
+  el.classList.remove('flex');
+  el.classList.add('hidden');
+
+  // Reset khusus untuk modal Top Up
+  if(id === 'topUpModal'){
+    const inp = document.getElementById('custom-topup-input');
+    if(inp) inp.value = '';
+    window.selectedTopUpAmount = 0;
+    const btn = document.getElementById('confirmTopUpBtn');
+    if(btn) btn.disabled = true;
+    document.querySelectorAll('.quick-topup-btn').forEach(b=>{
+      b.classList.remove('bg-green-100','border-green-500');
+      b.classList.add('border-gray-300');
+    });
+  }
+  // Reset guide selection when any modal is closed
+  try{ resetGuideSelection(); }catch(e){}
+}
+
+// GLOBAL STATE (clean start)
+window.isLoggedIn = false;
+window.userBalance = 0; // always numeric
+window.pendingTopup = 0;
+window.cart = [];
+window.serviceFee = 5000;
+window.selectedTopUpAmount = 0;
+
+// UI sync
+function updateAllBalanceDisplays(){ ['user-balance-display'].forEach(id=>{ const el=document.getElementById(id); if(el) el.textContent = (window.isLoggedIn?formatRupiah(window.userBalance):'(Login terlebih dahulu)'); }); }
+
+// Tab navigation
+// MODIFIKASI: Menggunakan style.display = 'none' untuk memastikan tab tersembunyi
+function showTab(name){ 
+  document.querySelectorAll('.tab-content').forEach(el=>{
+    el.style.display = 'none'; // Pastikan disembunyikan
+    el.classList.add('hidden'); // Pertahankan class
+  }); 
+  const t = document.getElementById(name); 
+  if(t) {
+    t.classList.remove('hidden');
+    t.style.display = 'block'; // Tampilkan yang aktif
+  }
+  
+  // Desktop/XL Tab styling: ADD BLUE LINE
+  document.querySelectorAll('.tab-button').forEach(btn=>{
+      // Reset all buttons to inactive state
+      // Hapus font-semibold, text-blue-600, border-blue-600
+      btn.classList.remove('font-semibold', 'text-blue-600', 'border-blue-600');
+      // Tambah kembali text-gray-600, hover:bg-gray-100, dan border-transparent
+      btn.classList.add('text-gray-600', 'hover:bg-gray-100', 'border-transparent'); 
+  });
+
+  const activeBtnId = { destinasi: 'btn-destinasi', penginapan: 'btn-penginapan', kuliner: 'btn-kuliner', pembayaran: 'btn-pembayaran' }[name]; 
+  if(activeBtnId){ 
+      const btn = document.getElementById(activeBtnId);
+      if(btn){
+        // Set active button style (add blue line and blue text)
+        btn.classList.add('font-semibold', 'text-blue-600', 'border-blue-600');
+        btn.classList.remove('text-gray-600', 'hover:bg-gray-100', 'border-transparent');
+      }
+  }
+
+  // Mobile Tab Styling: ADD BLUE LINE (agar konsisten jika diubah dari desktop)
+  document.querySelectorAll('.mobile-tab').forEach(btn => {
+      btn.classList.remove('font-semibold', 'text-blue-600', 'border-blue-600');
+      btn.classList.add('text-gray-600', 'border-transparent');
+  });
+  const activeMobileBtnId = { destinasi: 'mobile-btn-destinasi', penginapan: 'mobile-btn-penginapan', kuliner: 'mobile-btn-kuliner', pembayaran: 'mobile-btn-pembayaran' }[name]; 
+  if(activeMobileBtnId){
+    const btn = document.getElementById(activeMobileBtnId);
+    if(btn){
+        btn.classList.add('font-semibold', 'text-blue-600', 'border-blue-600');
+        btn.classList.remove('text-gray-600', 'border-transparent');
+    }
+  }
+
+  // Tampilkan Budget Filter hanya di tab Destinasi
+  const budgetFilter = document.getElementById('budgetFilter');
+  if (budgetFilter) {
+      if (name === 'destinasi') {
+          budgetFilter.classList.remove('hidden');
+          applyBudgetFilter(true); // Re-apply filter when showing destinasi tab
+      } else {
+          budgetFilter.classList.add('hidden');
+      }
+  }
+}
+
+// Sample data (small subset)
+// =============================
+// DESTINATION DATA
+// Tambahkan destinasi baru di sini.
+// img: bisa menggunakan gambar dari folder lokal Anda, contoh:
+// img:"img/nama_file.jpg"
+// description: tambahkan deskripsi manual.
+// =============================
+const destinationData = {
+  "Raja Ampat": {location:"Papua Barat",price:20000000,img:"img/AMPAT.jpeg", description: "Kepulauan dengan keindahan bawah laut yang tiada tara, surga bagi para penyelam dan pecinta alam bahari."},
+  "Gunung Bromo": {location:"Jawa Timur",price:2000000,img:"img/bromo.jpeg", description: "Pemandangan matahari terbit yang ikonik di atas kaldera purba, dikelilingi lautan pasir yang memukau."},
+  "Labuan Bajo": {location:"NTT",price:3500000,img:"img/labuan.jpeg", description: "Gerbang menuju Taman Nasional Komodo, terkenal dengan keindahan pantai pink dan pulau-pulau eksotis."},
+  "Nusa Penida": {location:"Bali",price:5000000,img:"img/nusa.jpeg", description: "Pulau kecil dengan tebing-tebing dramatis, perairan biru jernih, dan spot foto ikonik seperti Kelingking Beach."},
+  "Puncak": {location:"Jawa Barat",price:250000,img:"img/puncak.jpeg", description: "Kawasan pegunungan yang sejuk dengan hamparan kebun teh dan vila-vila, ideal untuk liburan singkat dari kota."},
+  "Lembang": {location:"Bandung",price:200000,img:"img/lembang.jpeg", description: "Daerah dataran tinggi Bandung yang menawarkan berbagai objek wisata alam dan kuliner kekinian."},
+  "Monas": {location:"Jakarta",price:150000,img:"img/monas.jpeg", description: "Monumen Nasional, simbol kemerdekaan Indonesia yang berdiri megah di jantung Ibu Kota."},
+  "Dufan": {location:"Jakarta",price:300000,img:"img/dufan.jpeg", description: "Dunia Fantasi Ancol, taman hiburan terbesar di Indonesia dengan berbagai wahana seru dan menantang."},
+  "Pantai Kuta": {location:"Bali",price:100000,img:"img/kuta.jpeg", description: "Pantai berpasir putih yang terkenal dengan ombaknya yang cocok untuk berselancar dan pemandangan matahari terbenam yang indah."},
+  "Candi Borobudur": {location:"Jawa Tengah",price:750000,img:"img/borobudur.jpeg", description: "Candi Buddha terbesar di dunia, sebuah mahakarya arsitektur kuno dengan relief-relief bersejarah."},
+  "Candi Prambanan": {location:"Yogyakarta",price:500000,img:"img/prambanan.jpeg", description: "Kompleks candi Hindu yang didedikasikan untuk Trimurti, terkenal dengan kisah Roro Jonggrang."},
+  "Pantai Parangtritis": {location:"Yogyakarta",price:200000,img:"img/parangtritis.jpeg", description: "Pantai legendaris dengan pasir hitam dan ombak besar, dikenal dengan cerita mistisnya."}
+};
+// =============================
+// HOTEL / PENGINAPAN DATA
+// Tambahkan hotel baru di sini.
+// Gunakan gambar lokal: img:"img/hotel1.jpg"
+// Tambah deskripsi manual bila diperlukan.
+// =============================
+const hotelData = {
+  "The Mulia Bali": {location:"Bali",price:4500000,img:"img/mulia.jpeg", description: "Resor mewah tepi pantai dengan fasilitas bintang lima, menawarkan pengalaman menginap tak tertandingi di Nusa Dua."},
+  "Royal Ambarrukmo": {location:"Yogyakarta",price:2000000,img:"img/ambu.jpeg", description: "Hotel bersejarah yang menggabungkan kemewahan modern dengan warisan budaya Jawa, dekat dengan pusat kota."},
+  "Hilton Bandung": {location:"Bandung",price:1800000,img:"img/hilton.jpeg", description: "Hotel modern dengan pemandangan kota Bandung yang indah, lokasi strategis dekat pusat perbelanjaan."},
+  "Aston Priority": {location:"Jakarta",price:1300000,img:"img/aston.jpeg", description: "Pilihan akomodasi bisnis dan rekreasi yang nyaman di Jakarta, menawarkan pelayanan prima dan fasilitas lengkap."},
+  "JW Marriott": {location:"Jakarta",price:2500000,img:"img/JW.jpeg", description: "Hotel bergengsi dengan desain elegan, ideal untuk pelancong bisnis dan liburan dengan layanan kelas dunia."},
+  "Merusaka Nusa Dua": {location:"Bali",price:3200000,img:"img/merusaka.jpeg", description: "Resor yang damai dengan arsitektur Bali yang kental, cocok untuk relaksasi total di kawasan Nusa Dua."}
+};
+// =============================
+// KULINER DATA
+// Tambahkan kuliner halal baru di sini.
+// Gambar bisa dari folder komputer Anda.
+// =============================
+const foodData = {
+  "Sate Maranggi": {location:"Purwakarta",price:50000,img:"img/maranggi.jpeg", description: "Sate khas Purwakarta yang kaya bumbu, disajikan tanpa saus kacang, dengan cita rasa manis dan gurih."},
+  "Rawon Nguling": {location:"Probolinggo",price:45000,img:"img/nguling.jpeg", description: "Sajian sup daging berkuah hitam kaya rempah dengan bumbu kluwek yang khas dari Jawa Timur."},
+  "Ayam Betutu": {location:"Bali",price:60000,img:"img/betutu.jpeg", description: "Ayam utuh yang dimasak dalam bumbu base genep yang sangat pedas dan aromatik, dibungkus daun pisang."},
+  "Gudeg Yu Djum": {location:"Yogyakarta",price:30000,img:"img/gudeg.jpeg", description: "Gudeg legendaris Yogyakarta yang terkenal dengan rasa manis gurihnya, nangka muda dimasak dengan santan hingga kering."},
+  "Pempek Palembang": {location:"Palembang",price:35000,img:"img/palembang.jpeg", description: "Makanan khas Palembang berbahan dasar ikan dan sagu, disajikan dengan kuah cuka hitam yang asam manis."},
+  "Nasi Padang": {location:"Sumatera Barat",price:40000,img:"img/padang.jpeg", description: "Nasi dengan pilihan lauk pauk khas Minangkabau yang kaya rempah, disajikan dengan gaya hidang unik."}
+};
+
+// Render sample cards
+// RENDER CARDS FUNCTION
+function renderCards(){ const dest=document.getElementById('dest-list'); if(dest){ dest.innerHTML = ''; for(const k in destinationData){ const d=destinationData[k]; const card=document.createElement('div'); card.className='destinasi-card cursor-pointer bg-white rounded-lg shadow overflow-hidden transition transform hover:-translate-y-1 hover:shadow-xl hover:shadow-md p-2'; card.innerHTML=`<img src="${d.img}" class="w-full h-24 object-cover">
+<div class='px-2 pt-1 text-yellow-500 text-xs'>★★★★★</div>
+<div class="p-2"><h3 class="font-semibold text-sm">${k}</h3><p class="text-xs text-gray-500">${d.location}</p><p class="text-xs text-gray-600 mt-1">${formatRupiah(d.price)}</p></div>`; card.onclick=()=>openDestination(k); dest.appendChild(card);} }
+ const hotel=document.getElementById('hotel-list'); if(hotel){ hotel.innerHTML=''; for(const k in hotelData){ const h=hotelData[k]; const card=document.createElement('div'); card.className='destinasi-card cursor-pointer bg-white rounded-lg shadow overflow-hidden transition transform hover:-translate-y-1 hover:shadow-xl p-2'; card.innerHTML=`<img src="${h.img}" class="w-full h-24 object-cover">
+<div class='px-2 pt-1 text-yellow-500 text-xs'>★★★★☆</div>
+<div class="p-2"><h3 class="font-semibold text-sm">${k}</h3><p class="text-xs text-gray-500">${h.location}</p><p class="text-xs text-gray-600 mt-1">${formatRupiah(h.price)}</p></div>`; card.onclick=()=>openHotel(k); hotel.appendChild(card);} }
+ const food=document.getElementById('food-list'); if(food){ food.innerHTML=''; for(const k in foodData){ const f=foodData[k]; const card=document.createElement('div'); card.className='kuliner-card cursor-pointer bg-white p-3 rounded-lg shadow transition transform hover:-translate-y-1 hover:shadow-xl'; card.innerHTML=`<div class="flex items-center space-x-4 relative">
+<div class='absolute top-1 right-2 text-yellow-500 text-xs'>★★★★★</div>
+<img src="${f.img}" class="w-20 h-20 rounded-md object-cover"><div class="flex-grow"><h3 class="font-semibold">${k}</h3><p class="text-sm text-gray-500">${f.location}</p><p class="text-xs text-gray-600 mt-1">${formatRupiah(f.price)}</p></div></div>`; card.onclick=()=>openFood(k); food.appendChild(card);} }
+}
+
+// Open detail functions (set current item to add to cart)
+let currentItem = null;
+
+// --- GUIDE FEATURE START ---
+window.selectedGuidePrice = 0;
+
+function updateGuidePrice(p){
+  window.selectedGuidePrice = Number(p||0);
+  const guideEl = document.getElementById('guide-price-display');
+  const baseEl = document.getElementById('base-price-display');
+  const totalEl = document.getElementById('total-price-display');
+  const base = parseRupiahToNumber(baseEl ? baseEl.textContent : '0');
+  if(guideEl) guideEl.textContent = formatRupiah(window.selectedGuidePrice);
+  if(totalEl) totalEl.textContent = formatRupiah(Number(base) + Number(window.selectedGuidePrice));
+}
+
+// Ensure radio buttons reset when modal closed/opened
+function resetGuideSelection(){
+  const radios = document.getElementsByName('guideOption');
+  for(const r of radios){ if(r && r.value === '0'){ r.checked = true; } }
+  updateGuidePrice(0);
+}
+// --- GUIDE FEATURE END ---
+
+// =============================
+// DETAIL DESTINASI (MENGGUNAKAN DESKRIPSI BARU)
+// =============================
+function openDestination(name){ 
+  document.getElementById('guide-options-container').style.display='block'; 
+  const data=destinationData[name]; 
+  if(!data) return; 
+  currentItem = { name, type: 'Destinasi', price: data.price }; 
+  document.getElementById('destination-detail-title').textContent = name; 
+  document.getElementById('destination-detail-location').textContent = data.location; 
+  document.getElementById('destination-detail-description').textContent = data.description; // DESKRIPSI BARU
+  document.getElementById('destination-detail-img').src = data.img; 
+  document.getElementById('base-price-display').textContent = formatRupiah(data.price); 
+  resetGuideSelection(); 
+  document.getElementById('total-price-display').textContent = formatRupiah(data.price + (window.selectedGuidePrice||0)); 
+  openModal('destinationDetailModal'); 
+}
+function openHotel(name){ 
+  document.getElementById('guide-options-container').style.display='none'; 
+  const data=hotelData[name]; 
+  if(!data) return; 
+  currentItem = { name, type: 'Hotel', price: data.price }; 
+  document.getElementById('destination-detail-title').textContent = name; 
+  document.getElementById('destination-detail-location').textContent = data.location; 
+  document.getElementById('destination-detail-description').textContent = data.description; // DESKRIPSI BARU
+  document.getElementById('destination-detail-img').src = data.img; 
+  document.getElementById('base-price-display').textContent = formatRupiah(data.price); 
+  resetGuideSelection(); 
+  document.getElementById('total-price-display').textContent = formatRupiah(data.price + (window.selectedGuidePrice||0)); 
+  openModal('destinationDetailModal'); 
+}
+function openFood(name){ 
+  document.getElementById('guide-options-container').style.display='none'; 
+  const data=foodData[name]; 
+  if(!data) return; 
+  currentItem = { name, type: 'Kuliner', price: data.price }; 
+  document.getElementById('destination-detail-title').textContent = name; 
+  document.getElementById('destination-detail-location').textContent = data.location; 
+  document.getElementById('destination-detail-description').textContent = data.description; // DESKRIPSI BARU
+  document.getElementById('destination-detail-img').src = data.img; 
+  document.getElementById('base-price-display').textContent = formatRupiah(data.price); 
+  resetGuideSelection(); 
+  document.getElementById('total-price-display').textContent = formatRupiah(data.price + (window.selectedGuidePrice||0)); 
+  openModal('destinationDetailModal'); 
+}
+
+// Cart operations
+function addToCart(){ if(!currentItem) return; const guide = Number(window.selectedGuidePrice||0); const basePrice = Number(currentItem.price||0); const item = { name: currentItem.name, type: currentItem.type, price: basePrice + guide, guidePrice: guide }; window.cart.push(item); renderCart(); closeModal('destinationDetailModal'); showToast('Item ditambahkan ke keranjang', 'success'); }
+function removeFromCart(index){ window.cart.splice(index,1); renderCart(); }
+function clearCart(){ window.cart = []; renderCart(); showToast('Keranjang dikosongkan', 'info'); }
+
+function calculateCartTotals(){ const subtotal = window.cart.reduce((s,i)=> s + Number(i.price||0), 0); const service = window.cart.length>0?window.serviceFee:0; const grand = subtotal + service; return { subtotal, service, grand }; }
+
+function renderCart(){ const container = document.getElementById('cart-items-container'); const subtotalEl = document.getElementById('subtotal'); const serviceEl = document.getElementById('service-fee'); const grandEl = document.getElementById('grand-total'); const checkoutBtn = document.getElementById('checkoutBtn'); const clearBtn = document.getElementById('clearCartBtn'); const userBalanceEl = document.getElementById('user-balance-display'); if(!container) return; const totals = calculateCartTotals(); userBalanceEl.textContent = (window.isLoggedIn?formatRupiah(window.userBalance):'(Login terlebih dahulu)'); subtotalEl.textContent = formatRupiah(totals.subtotal); serviceEl.textContent = formatRupiah(totals.service); grandEl.textContent = formatRupiah(totals.grand); if(window.cart.length===0){ container.innerHTML = '<div class="text-center text-gray-500 py-10">Keranjang kosong. Silahkan tambah item dari tab Destinasi/Penginapan untuk melanjutkan...</div>'; checkoutBtn.disabled = true; clearBtn.disabled = true; checkoutBtn.textContent = 'Bayar Sekarang'; checkoutBtn.classList.remove('bg-red-500'); checkoutBtn.classList.add('bg-green-600'); } else { let html=''; window.cart.forEach((item,idx)=>{ html += `<div class="flex justify-between items-center border-b pb-4 last:border-b-0 last:pb-0"><div class="flex-grow"><p class="font-semibold text-gray-800">${item.name}</p><p class="text-xs text-gray-500">${item.type}</p></div><div class="flex items-center space-x-2"><span class="font-semibold text-sm text-blue-600">${formatRupiah(item.price)}</span><button onclick="removeFromCart(${idx})" class="text-red-500 hover:text-red-600"><i data-lucide="x" class="w-4 h-4"></i></button></div></div>`; }); container.innerHTML = html; checkoutBtn.disabled = totals.grand>0 && (!window.isLoggedIn || Number(window.userBalance) < Number(totals.grand)); clearBtn.disabled = false; if(totals.grand>0 && window.isLoggedIn && Number(window.userBalance) < Number(totals.grand)){ checkoutBtn.textContent = `Payment Gagal (Saldo Kurang ${formatRupiah(totals.grand - Number(window.userBalance||0))})`; checkoutBtn.classList.remove('bg-green-600'); checkoutBtn.classList.add('bg-red-500'); } else { checkoutBtn.textContent = 'Bayar Sekarang'; checkoutBtn.classList.remove('bg-red-500'); checkoutBtn.classList.add('bg-green-600'); } }
+  try{ if(window.lucide) lucide.createIcons(); }catch(e){}
+}
+
+// CHECKOUT
+function handleCheckout(){ const totals = calculateCartTotals(); const total = totals.grand; if(total<=0){ showToast('Tidak ada yang dibayar.', 'error'); return; } if(!window.isLoggedIn){ showToast('Silakan login terlebih dahulu.', 'error'); openLoginModal(); return; } if(Number(window.userBalance) < Number(total)){ showToast('Saldo tidak cukup!', 'error'); renderCart(); return; } window.userBalance = Number(window.userBalance) - Number(total); const paid = total; window.cart = []; renderCart(); updateAllBalanceDisplays(); const paidEl = document.getElementById('modal-paid-amount'); if(paidEl) paidEl.textContent = formatRupiah(paid); const remEl = document.getElementById('modal-remaining-balance'); if(remEl) remEl.textContent = formatRupiah(window.userBalance); openModal('successPaymentModal'); }
+
+// TOP UP
+function selectTopUpAmount(amount){
+  window.selectedTopUpAmount = Number(amount);
+  document.querySelectorAll('.quick-topup-btn').forEach(btn=>{
+    const v = parseRupiahToNumber(btn.getAttribute('data-amount'));
+    if(v===Number(amount)){
+      btn.classList.add('bg-green-100','border-green-500');
+      btn.classList.remove('border-gray-300');
+    } else {
+      btn.classList.remove('bg-green-100','border-green-500');
+      btn.classList.add('border-gray-300');
+    }
+  });
+
+  const inp=document.getElementById('custom-topup-input');
+  if(inp){ inp.value=''; }
+  const cBtn=document.getElementById('confirmTopUpBtn');
+  if(cBtn){ cBtn.disabled=false; }
+}
+
+// QUICK TOPUP BUTTON FIX
+// Tambah event listener agar tombol pilihan cepat bisa diklik
+const quickButtons = document.querySelectorAll('.quick-topup-btn');
+quickButtons.forEach(btn => {
+  btn.addEventListener('click', ()=>{
+    const amount = btn.getAttribute('data-amount');
+    selectTopUpAmount(amount);
+  });
+});
+
+// FORMAT INPUT TOPUP
+const topupInput = document.getElementById('custom-topup-input');
+if(topupInput){
+  topupInput.addEventListener('input', function(){
+    let raw = this.value.replace(/[^0-9]/g, '');
+    let num = Number(raw || 0);
+    this.value = num.toLocaleString('id-ID');
+    window.selectedTopUpAmount = num;
+    const btn = document.getElementById('confirmTopUpBtn');
+    if(btn) btn.disabled = num < 10000;
+  });
+}
+
+// TOP UP handler (MODIFIED FOR PAYMENT METHOD SIMULATION)
+function handleTopUp(){
+  let amount = Number(window.selectedTopUpAmount||0);
+  const custom = parseRupiahToNumber(document.getElementById('custom-topup-input')?.value);
+  if(custom>=10000) amount = custom;
+  if(amount < 10000){ showToast('Jumlah top up minimum adalah Rp 10.000.', 'error'); return; }
+  
+  // Check login status
+  if(!window.isLoggedIn){ 
+      window.pendingTopup = amount; 
+      closeModal('topUpModal'); 
+      openLoginModal(); 
+      return; 
+  } 
+
+  // NEW LOGIC: Proceed to payment method selection
+  window.pendingTopup = amount; // Store the amount to be paid
+  
+  // Reset payment method modal
+  const amountDisplay = document.getElementById('topup-amount-display');
+  const finalBtn = document.getElementById('finalSimulatePaymentBtn');
+  const infoEl = document.getElementById('topup-info');
+
+  if(amountDisplay) amountDisplay.textContent = formatRupiah(amount);
+  if(finalBtn) finalBtn.disabled = true;
+  if(infoEl) infoEl.textContent = 'Pilih salah satu di atas untuk melanjutkan simulasi pembayaran.';
+  
+  document.querySelectorAll('.topup-method-btn').forEach(btn => {
+      btn.classList.remove('bg-green-100', 'border-green-500');
+  });
+
+  closeModal('topUpModal');
+  openModal('topUpMethodModal');
+}
+
+// New function for payment simulation
+function simulateTopUpPayment(methodName, fee) {
+    const amount = Number(window.pendingTopup);
+    const totalPayment = amount + fee;
+
+    const infoEl = document.getElementById('topup-info');
+    const finalBtn = document.getElementById('finalSimulatePaymentBtn');
+    
+    // Update button text and disable for "payment"
+    finalBtn.textContent = 'Membayar...';
+    finalBtn.disabled = true;
+    
+    // Show simulation message (and render the loader icon)
+    infoEl.innerHTML = `<i data-lucide="loader-2" class="w-4 h-4 inline mr-1 animate-spin"></i> Memproses pembayaran total <span class="font-bold">${formatRupiah(totalPayment)}</span> via ${methodName}...`;
+    try{ if(window.lucide) lucide.createIcons(); }catch(e){} // Ensure icon is rendered
+
+    // SIMULASI DELAY 2 DETIK
+    setTimeout(() => {
+        // Cek kembali apakah user sudah login dan jumlahnya valid
+        if (window.isLoggedIn && amount > 0) {
+            // Update balance
+            window.userBalance = Number(window.userBalance) + amount;
+            window.pendingTopup = 0;
+            
+            updateAllBalanceDisplays();
+            renderCart();
+            closeModal('topUpMethodModal');
+            
+            // Tampilkan toast sukses
+            showToast(`Top up ${formatRupiah(amount)} berhasil via ${methodName}! (Biaya ${formatRupiah(fee)})`, 'success');
+        } else {
+            showToast('Top up dibatalkan/gagal. Silakan coba lagi.', 'error');
+            closeModal('topUpMethodModal');
+        }
+        
+        // Reset button and info text
+        finalBtn.textContent = 'Bayar Sekarang';
+    }, 2000); // 2 second delay for simulation
+}
+
+// LOGIN / LOGOUT unified (simple)
+function openLoginModal(){ openModal('loginModal'); }
+function submitLogin(){ const email = document.getElementById('loginEmail')?.value?.trim().toLowerCase(); const pass = document.getElementById('loginPassword')?.value?.trim().toLowerCase(); if(email==='admin' && pass==='admin'){ window.isLoggedIn = true; // Jangan reset saldo jika sudah ada
+if(window.userBalance == null || window.userBalance === 0){ window.userBalance = 1500000; } if(window.pendingTopup && window.pendingTopup>0){ 
+// Jika ada pending top up, langsung proses
+// Karena proses top up sekarang multi-step, jika login dari sini, kita buka kembali modal top up method
+closeModal('loginModal');
+document.getElementById('topup-amount-display').textContent = formatRupiah(window.pendingTopup);
+document.querySelectorAll('.topup-method-btn').forEach(btn => {
+      btn.classList.remove('bg-green-100', 'border-green-500');
+  });
+openModal('topUpMethodModal'); // Lanjutkan ke pemilihan metode bayar
+} else {
+  closeModal('loginModal');
+}
+document.getElementById('controls-before')?.classList.add('hidden'); document.getElementById('controls-after')?.classList.remove('hidden'); updateAllBalanceDisplays(); renderCart(); showToast('Login berhasil!'); } else { showToast('Username atau password salah!', 'error'); } }
+function logout(){ window.isLoggedIn = false; window.userBalance = 0; document.getElementById('controls-before')?.classList.remove('hidden'); document.getElementById('controls-after')?.classList.add('hidden'); updateAllBalanceDisplays(); renderCart(); showToast('Anda telah logout','info'); }
+
+// BUDGET FILTER
+
+function applyBudgetFilter(forceShowAll = false) {
+    const slider = document.getElementById('budgetSlider');
+    const budget = Number(slider.value);
+    document.getElementById('budgetValue').textContent = formatRupiah(budget);
+
+    if (forceShowAll && budget === 0) {
+        document.querySelectorAll('#dest-list .destinasi-card').forEach(card => card.style.display = 'block');
+        return;
+    }
+
+    document.querySelectorAll('#dest-list .destinasi-card').forEach(card => {
+        const priceText = card.querySelector('p.text-xs.text-gray-600')?.textContent || '0';
+        const price = parseRupiahToNumber(priceText);
+        card.style.display = price <= budget ? 'block' : 'none';
+    });
+}
+
+// MODIFIKASI: FUNGSI LIVE SEARCH UNIVERSAL
+function liveSearch(){
+  const q = document.getElementById('search-input').value.toLowerCase();
+  const budgetFilter = document.getElementById('budgetFilter');
+  const isSearchActive = q.length > 0;
+  
+  // 1. Destinasi
+  document.querySelectorAll('#dest-list .destinasi-card').forEach(card=>{
+    const name = card.querySelector('h3')?.textContent.toLowerCase()||'';
+    const isMatch = name.includes(q);
+    
+    // Terapkan filter pencarian
+    card.style.display = isMatch ? 'block' : 'none';
+
+    // Jika pencarian kosong, terapkan kembali filter budget (jika filter budget sedang aktif)
+    if (!isSearchActive && budgetFilter && !budgetFilter.classList.contains('hidden')) {
+        const priceText = card.querySelector('p.text-xs.text-gray-600')?.textContent || '0';
+        const price = parseRupiahToNumber(priceText);
+        const budget = Number(document.getElementById('budgetSlider').value);
+        card.style.display = price <= budget ? 'block' : 'none';
+    }
+  });
+
+  // 2. Hotel
+  document.querySelectorAll('#hotel-list .destinasi-card').forEach(card=>{
+    const name = card.querySelector('h3')?.textContent.toLowerCase()||'';
+    card.style.display = name.includes(q) ? 'block' : 'none';
+  });
+
+  // 3. Kuliner
+  document.querySelectorAll('#food-list .kuliner-card').forEach(card=>{
+    const name = card.querySelector('h3')?.textContent.toLowerCase()||'';
+    card.style.display = name.includes(q) ? 'block' : 'none';
+  });
+  
+  // 4. Atur Budget Filter
+  if (budgetFilter) {
+      // Sembunyikan filter budget saat ada input di search bar, dan pastikan filter budget hanya muncul di tab destinasi
+      const activeTabId = document.querySelector('.tab-button.font-semibold')?.id?.split('-')[1] || document.querySelector('.mobile-tab.font-semibold')?.dataset.target || 'destinasi';
+
+      if (isSearchActive || activeTabId !== 'destinasi') {
+          budgetFilter.classList.add('hidden');
+      } else {
+          budgetFilter.classList.remove('hidden');
+          applyBudgetFilter(true); // Re-apply budget filter jika kembali ke tab destinasi & search kosong
+      }
+  }
+}
+
+
+// FUNCTION TO INITIALIZE MOBILE TAB STYLING (MODIFIKASI)
+function initializeMobileTabs(defaultTab = 'destinasi') {
+  document.querySelectorAll('.mobile-tab').forEach(b => {
+    // Reset all to inactive (gray text, transparent border)
+    b.classList.remove('font-semibold', 'text-blue-600', 'border-blue-600');
+    b.classList.add('text-gray-600', 'border-transparent');
+
+    if (b.dataset.target === defaultTab) {
+        // Set active (blue text, blue border)
+        b.classList.add('font-semibold', 'text-blue-600', 'border-blue-600');
+        b.classList.remove('text-gray-600', 'border-transparent');
+    }
+  });
+}
+
+// INITIALIZE UI
+function initializeUI(){
+  renderCards();
+  showTab('destinasi');
+  initializeMobileTabs('destinasi'); // Set initial active tab for mobile
+  updateAllBalanceDisplays();
+  renderCart();
+  try{ if(window.lucide) lucide.createIcons(); }catch(e){}
+
+  // wire buttons
+  document.getElementById('addToCartBtn')?.addEventListener('click', addToCart);
+  document.getElementById('checkoutBtn') && (document.getElementById('checkoutBtn').onclick = handleCheckout);
+  document.getElementById('openTopUpBtn') && (document.getElementById('openTopUpBtn').onclick = ()=>openModal('topUpModal'));
+  document.getElementById('confirmTopUpBtn') && (document.getElementById('confirmTopUpBtn').onclick = handleTopUp); // MODIFIED TO CALL handleTopUp
+  document.getElementById('clearCartBtn') && (document.getElementById('clearCartBtn').onclick = clearCart);
+  document.getElementById('btnLoginTop') && (document.getElementById('btnLoginTop').onclick = openLoginModal);
+  document.getElementById('profileBtnTop')?.addEventListener('click', ()=>{
+  const m=document.getElementById('profileMenuTop');
+  m.classList.toggle('hidden');
+});
+document.getElementById('profileLogoutBtn') && (document.getElementById('profileLogoutBtn').onclick = logout);
+
+  // tab buttons
+  document.getElementById('btn-destinasi')?.addEventListener('click', ()=>showTab('destinasi'));
+  document.getElementById('btn-penginapan')?.addEventListener('click', ()=>showTab('penginapan'));
+  document.getElementById('btn-kuliner')?.addEventListener('click', ()=>showTab('kuliner'));
+  document.getElementById('btn-pembayaran')?.addEventListener('click', ()=>showTab('pembayaran'));
+
+  // submit login
+  document.getElementById('submitLoginBtn') && (document.getElementById('submitLoginBtn').onclick = submitLogin);
+
+  // ENTER KEY LOGIN
+  const emailInput = document.getElementById('loginEmail');
+  const passInput = document.getElementById('loginPassword');
+  [emailInput, passInput].forEach(inp=>{
+    if(inp){ inp.addEventListener('keydown', function(e){ if(e.key === 'Enter'){ submitLogin(); }}); }
+  });
+  document.getElementById('submitLoginBtn') && (document.getElementById('submitLoginBtn').onclick = submitLogin);
+}
+
+// HIDE LOADING SCREEN
+function hideLoading(){
+  const l = document.getElementById('loadingScreen');
+  if(l){
+    // no fade out
+    l.style.transform = 'translateY(-120%)';
+    setTimeout(()=>l.remove(),500);
+  }
+  // Reset guide selection when any modal is closed
+  try{ resetGuideSelection(); }catch(e){}
+}
+// FIX: removed stray closing brace
+
+// Run initialize when DOM ready
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', () => {
+    initializeUI();
+    const b = document.getElementById('budgetSlider');
+    if (b) b.addEventListener('input', () => applyBudgetFilter(true));
+    
+
+    const budgetInput = document.getElementById('budgetInput');
+    if (budgetInput) {
+      
+budgetInput.addEventListener('input', function () {
+    this.dataset.userInput = 'true';
+    let raw = this.value.replace(/[^0-9]/g, '');
+    let num = Number(raw || 0);
+    this.value = num.toLocaleString('id-ID');
+    const slider = document.getElementById('budgetSlider');
+    if (num > Number(slider.max)) slider.max = num;
+    slider.value = num;
+    applyBudgetFilter(true);
+});
+
+    }
+
+    // Wiring for topUpMethodModal buttons (NEW)
+    document.querySelectorAll('.topup-method-btn').forEach(btn => {
+        btn.addEventListener('click', function(){
+            const method = this.getAttribute('data-method');
+            let fee = 0;
+            let methodName = '';
+
+            document.querySelectorAll('.topup-method-btn').forEach(b => {
+                b.classList.remove('bg-green-100', 'border-green-500');
+            });
+            this.classList.add('bg-green-100', 'border-green-500');
+
+            if (method === 'bank') {
+                fee = 2500;
+                methodName = 'Transfer Bank';
+            } else if (method === 'ewallet') {
+                fee = 1500;
+                methodName = 'E-Wallet';
+            }
+
+            const amount = Number(window.pendingTopup);
+            const totalPayment = amount + fee;
+            
+            document.getElementById('topup-info').innerHTML = `Anda akan membayar total <span class="font-bold text-red-600">${formatRupiah(totalPayment)}</span> (Termasuk Biaya: ${formatRupiah(fee)})`;
+            
+            const finalBtn = document.getElementById('finalSimulatePaymentBtn');
+            finalBtn.disabled = false;
+            finalBtn.onclick = () => simulateTopUpPayment(methodName, fee);
+        });
+    });
+
+
+    setTimeout(() => {
+      hideLoading();
+      const m = document.getElementById('mainContainer');
+      if (m) {
+        m.classList.remove('opacity-0');
+        m.classList.add('opacity-100');
+      }
+    }, 2000);
+  });
+} else {
+  initializeUI();
+  setTimeout(() => {
+    hideLoading();
+    const m = document.getElementById('mainContainer');
+    if (m) {
+      m.classList.remove('opacity-0');
+      m.classList.add('opacity-100');
+    }
+  }, 2000);
+}
+
+document.getElementById("closeSidebar").addEventListener("click",()=>{
+ document.getElementById("mobileSidebar").classList.add("translate-x-full");
+});
+</script>
+
+
+<script>
+// MOBILE TAB SWITCH (PERUBAHAN LOGIC UNTUK GARIS BIRU)
+document.querySelectorAll('.mobile-tab').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    let target = btn.dataset.target;
+
+    // Active state styling for mobile tabs: blue underline
+    document.querySelectorAll('.mobile-tab').forEach(b=>{
+        // Reset all buttons to inactive state
+        b.classList.remove('font-semibold', 'text-blue-600', 'border-blue-600');
+        b.classList.add('text-gray-600', 'border-transparent');
+    });
+    
+    // Set active button style
+    btn.classList.add('font-semibold', 'text-blue-600', 'border-blue-600');
+    btn.classList.remove('text-gray-600', 'border-transparent');
+    
+    let sections = ['destinasi','penginapan','kuliner','pembayaran'];
+    sections.forEach(id=>{
+      const el = document.getElementById(id);
+      if(el){
+        // MODIFIKASI: Gunakan style.display untuk konsistensi
+        el.style.display = (id===target) ? 'block':'none';
+      }
+    });
+
+    // Tampilkan/Sembunyikan Budget Filter
+    const budgetFilter = document.getElementById('budgetFilter');
+    if (budgetFilter) {
+        if (target === 'destinasi' && document.getElementById('search-input').value.length === 0) {
+            budgetFilter.classList.remove('hidden');
+            applyBudgetFilter(true);
+        } else {
+            budgetFilter.classList.add('hidden');
+        }
+    }
+    window.scrollTo(0,0);
+  });
+});
+
+document.getElementById("closeSidebar").addEventListener("click",()=>{
+ document.getElementById("mobileSidebar").classList.add("translate-x-full");
+});
+</script>
+
+
+<div id="mobileSidebar" style="position:fixed; top:0; right:-320px; width:300px;
+height:100vh; background:#fff; box-shadow:-4px 0 20px rgba(0,0,0,0.15);
+z-index:9999999999; transition:right .28s ease; display:none; padding-top:20px;">
+  <div style="position:absolute; top:12px; right:12px;">
+    <button id="closeSidebar" aria-label="Close sidebar"
+      style="padding:6px 10px; border-radius:999px; background:#f3f4f6; border:none;">✕</button>
+  </div>
+  <div id="sidebarContent" style="padding:28px 20px 20px 20px; text-align:center;"></div>
+</div>
+
+<script>
+// Improved mobile sidebar open/close and wiring
+(function(){
+  const mbtn = document.getElementById("mobileMenuBtn");
+  const msb = document.getElementById("mobileSidebar");
+  const closeBtn = document.getElementById("closeSidebar");
+  const logoutBtn = document.getElementById("logoutBtn");
+
+  function openMobileSidebar(){
+    if(!msb) return;
+    msb.style.display = 'block';
+    // small delay to allow display:block before anim
+    setTimeout(()=>{ msb.style.right = '0'; }, 10);
+    // update balance/avatar immediately
+    updateAllBalanceDisplays();
+  }
+  function closeMobileSidebar(){
+    if(!msb) return;
+    msb.style.right = '-340px';
+    // hide after transition
+    setTimeout(()=>{ msb.style.display = 'none'; }, 300);
+  }
+
+  if(mbtn){
+    mbtn.addEventListener("click", function(e){
+      e.stopPropagation();
+      // toggle
+      if(msb.style.display === 'block' && msb.style.right === '0px') closeMobileSidebar();
+      else openMobileSidebar();
+    });
+  }
+
+  if(closeBtn) closeBtn.addEventListener("click", function(e){ e.stopPropagation(); closeMobileSidebar(); });
+
+  // close when clicking outside
+  document.addEventListener("click", function(e){
+    if(!msb) return;
+    if(msb.style.display === 'block'){
+      if(!msb.contains(e.target) && !mbtn.contains(e.target)){
+        closeMobileSidebar();
+      }
+    }
+  });
+
+  // wire logout button to existing logout() if present
+  if(logoutBtn){
+    logoutBtn.addEventListener("click", function(e){
+      e.stopPropagation();
+      try{ if(typeof logout === 'function') logout(); }catch(err){}
+      closeMobileSidebar();
+    });
+  }
+
+  // expose functions globally for debugging
+  window.openMobileSidebar = openMobileSidebar;
+  window.closeMobileSidebar = closeMobileSidebar;
+})();
+</script>
+
+
+<script>
+(function(){
+  const msb=document.getElementById("mobileSidebar");
+  const mbtn=document.getElementById("mobileMenuBtn");
+  const closeBtn=document.getElementById("closeSidebar");
+  function renderSidebar(){
+    const box=document.getElementById("sidebarContent");
+    if(!window.isLoggedIn){
+      box.innerHTML=`
+        <p style="font-weight:600;color:#374151;margin-top:20px;">Saldo Anda</p>
+        <p style="font-size:20px;font-weight:700;color:#1e3a8a;margin:6px 0 20px;">Rp 0 (Login dahulu)</p>
+        <button id="loginBtnSidebar" style="width:100%;background:#2563eb;color:#fff;padding:10px;border-radius:8px;border:none;font-weight:600;">Login</button>
+      `;
+      document.getElementById("loginBtnSidebar").onclick=()=>{ if(window.openLoginModal) openLoginModal(); closeMobileSidebar(); };
+    } else {
+      box.innerHTML=`
+        <img src="img/banteng.jpeg" style="width:80px;height:80px;border-radius:9999px;margin:6px auto;">
+        <p style="font-weight:600;color:#374151;margin-top:6px;">Saldo Anda</p>
+        <p style="font-size:20px;font-weight:700;color:#1e3a8a;margin:6px 0 20px;">${window.formatRupiah?formatRupiah(window.userBalance):window.userBalance}</p>
+        <button id="logoutBtnSidebar" style="width:100%;background:#ef4444;color:#fff;padding:10px;border-radius:8px;border:none;font-weight:600;">Logout</button>
+      `;
+      document.getElementById("logoutBtnSidebar").onclick=()=>{ if(window.logout) logout(); closeMobileSidebar(); };
+    }
+  }
+  function openMobileSidebar(){ renderSidebar(); msb.style.display='block'; setTimeout(()=>msb.style.right='0',10);}
+  function closeMobileSidebar(){ msb.style.right='-350px'; setTimeout(()=>msb.style.display='none',250);}
+  if(mbtn) mbtn.onclick=openMobileSidebar;
+  if(closeBtn) closeBtn.onclick=closeMobileSidebar;
+})();
+</script>
+</body>
+</html>
